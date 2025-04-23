@@ -6,6 +6,7 @@ const CartContext = createContext();
 export function CartProvider({ children }) {
   const [cart, setCart] = useState([]);
 
+  // Load from localStorage
   useEffect(() => {
     const savedCart = localStorage.getItem('garden-artworks-cart');
     if (savedCart) setCart(JSON.parse(savedCart));
@@ -21,8 +22,21 @@ export function CartProvider({ children }) {
               : item
           )
         : [...prev, { ...product, quantity }];
+      
       localStorage.setItem('garden-artworks-cart', JSON.stringify(newCart));
       return newCart;
+    });
+  };
+
+  const updateQuantity = (productId, newQuantity) => {
+    setCart(prev => {
+      const updatedCart = prev.map(item => 
+        item.id === productId 
+          ? { ...item, quantity: Math.max(1, newQuantity) } // Minimum 1
+          : item
+      );
+      localStorage.setItem('garden-artworks-cart', JSON.stringify(updatedCart));
+      return updatedCart;
     });
   };
 
@@ -35,7 +49,7 @@ export function CartProvider({ children }) {
   };
 
   return (
-    <CartContext.Provider value={{ cart, addToCart, removeFromCart }}>
+    <CartContext.Provider value={{ cart, addToCart, removeFromCart, updateQuantity }}>
       {children}
     </CartContext.Provider>
   );
